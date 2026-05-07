@@ -25,6 +25,30 @@ check() {
     fi
 }
 
+# Grace period post-reboot: si twenty-server está "starting", esperar hasta
+# 90s antes de evaluar. Twenty (Nest) tarda ~60s en mapear rutas y pasar de
+# starting → healthy, lo que produce falsos FAIL tras un reboot frío.
+wait_for_starting() {
+    local container="$1"
+    local max_wait=90
+    local waited=0
+    local status
+    while [ "$waited" -lt "$max_wait" ]; do
+        status=$(docker inspect --format='{{.State.Health.Status}}' "$container" 2>/dev/null)
+        if [ "$status" != "starting" ]; then
+            return 0
+        fi
+        if [ "$waited" -eq 0 ]; then
+            echo "  [WAIT] $container en 'starting' — esperando hasta ${max_wait}s..."
+        fi
+        sleep 5
+        waited=$((waited + 5))
+    done
+}
+
+wait_for_starting jaquemate-twenty-server
+wait_for_starting jaquemate-db
+
 echo ""
 echo "Containers:"
 check "postgres healthy"        "docker inspect --format='{{.State.Health.Status}}' jaquemate-db | grep -q healthy"
