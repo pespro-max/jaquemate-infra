@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Jaque Mate mark inverso">
+  <title>Jaque Mate</title>
+  <desc>Mark inverso de Jaque Mate, optimizado para fondos oscuros.</desc>
+
+  <!-- Casilla superior izquierda — marfil pleno (sobre fondo oscuro) -->
+  <rect x="10" y="10" width="40" height="40" fill="#EDE3D2" rx="3"/>
+  <!-- Casilla superior derecha — marfil con opacidad reducida -->
+  <rect x="50" y="10" width="40" height="40" fill="#EDE3D2" opacity="0.25" rx="3"/>
+  <!-- Casilla inferior izquierda — marfil con opacidad reducida -->
+  <rect x="10" y="50" width="40" height="40" fill="#EDE3D2" opacity="0.25" rx="3"/>
+  <!-- Casilla inferior derecha — marfil pleno con # -->
+  <rect x="50" y="50" width="40" height="40" fill="#EDE3D2" rx="3"/>
+
+  <!-- Símbolo # en granate -->
+  <text x="70" y="80" text-anchor="middle"
+        font-family="'JetBrains Mono', monospace"
+        font-weight="700"
+        font-size="36"
+        fill="#7C1D2E">#</text>
+
+  <!-- Borde general -->
+  <rect x="9.5" y="9.5" width="81" height="81" fill="none" stroke="#EDE3D2" stroke-width="1" opacity="0.5" rx="3.5"/>
+</svg>

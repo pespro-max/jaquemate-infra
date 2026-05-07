@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Jaque Mate mark">
+  <title>Jaque Mate</title>
+  <desc>Mark cuadrado de Jaque Mate. cuadricula 2x2 con casillas Nogal y Marfil, simbolo # de notacion de mate en casilla inferior derecha.</desc>
+
+  <!-- Casilla superior izquierda — marfil -->
+  <rect x="10" y="10" width="40" height="40" fill="#EDE3D2" rx="3"/>
+  <!-- Casilla superior derecha — nogal -->
+  <rect x="50" y="10" width="40" height="40" fill="#3B2A1F" rx="3"/>
+  <!-- Casilla inferior izquierda — nogal -->
+  <rect x="10" y="50" width="40" height="40" fill="#3B2A1F" rx="3"/>
+  <!-- Casilla inferior derecha — marfil con # -->
+  <rect x="50" y="50" width="40" height="40" fill="#EDE3D2" rx="3"/>
+
+  <!-- Símbolo # en granate -->
+  <text x="70" y="80" text-anchor="middle"
+        font-family="'JetBrains Mono', monospace"
+        font-weight="700"
+        font-size="36"
+        fill="#7C1D2E">#</text>
+
+  <!-- Borde general de la cuadricula -->
+  <rect x="9.5" y="9.5" width="81" height="81" fill="none" stroke="#3B2A1F" stroke-width="1" rx="3.5"/>
+</svg>

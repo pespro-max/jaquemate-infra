@@ -1,0 +1,67 @@
+# ============================================================
+# JAQUEMATE — Caddyfile
+# SSL automatico via Let's Encrypt (HTTP-01 challenge)
+# 6 tenants + portal de login + n8n + uptime monitor
+# ============================================================
+
+{
+    # CAMBIAR este email al correo real para alertas de Lets Encrypt
+    email eddy@fastnet.solutions
+
+    # Logging por defecto a stderr
+    log {
+        format json
+    }
+}
+
+# ---------- APEX + PORTAL DE LOGIN + 6 TENANTS ----------
+# Twenty CRM con multi-workspace habilitado.
+# El apex (jaquemate.jaqueting.com) DEBE proxearse al server, no redirigir:
+# el SPA tiene REACT_APP_SERVER_BASE_URL apuntando al apex y hace POST cross-origin
+# a /graphql desde cada subdominio. Un 301 en el apex rompe los preflights de CORS
+# y el SPA muestra "Unable to Reach Back-end".
+# Todos los hostnames apuntan al mismo server; Twenty rutea internamente al
+# workspace correcto segun el subdominio (Host header).
+jaquemate.jaqueting.com,
+app.jaquemate.jaqueting.com,
+pespro.jaquemate.jaqueting.com,
+traulog.jaquemate.jaqueting.com,
+jaqueting.jaquemate.jaqueting.com,
+fastnet.jaquemate.jaqueting.com,
+cancun.jaquemate.jaqueting.com,
+iki.jaquemate.jaqueting.com {
+    reverse_proxy server:3000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}
+
+# ---------- N8N (orquestador) ----------
+engine.jaquemate.jaqueting.com {
+    reverse_proxy n8n:5678 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}
+
+# ---------- UPTIME KUMA (monitoring) ----------
+monitor.jaquemate.jaqueting.com {
+    reverse_proxy uptime-kuma:3001 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}
+
+# ============================================================
+# Para agregar mas tenants en el futuro:
+# 1. Crear DNS A record: nuevotenant.jaquemate.jaqueting.com -> IP del VPS
+# 2. Agregar la linea aqui en el bloque de Twenty
+# 3. docker exec jaquemate-caddy caddy reload --config /etc/caddy/Caddyfile
+# 4. Crear el workspace en Twenty (UI o GraphQL API)
+# ============================================================

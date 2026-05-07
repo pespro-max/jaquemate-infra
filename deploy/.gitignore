@@ -1,0 +1,38 @@
+# Secretos — NUNCA commitear
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# Volúmenes Docker locales
+postgres-data/
+redis-data/
+twenty-data/
+n8n-data/
+uptime-kuma-data/
+caddy-data/
+caddy-config/
+
+# Backups locales
+backups/
+*.sql
+*.sql.gz
+*.tar.gz
+*.dump
+
+# Logs
+*.log
+logs/
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Caddy data
+caddy/data/
+caddy/config/

@@ -1,0 +1,19 @@
+# Secrets — nunca commitear
+deploy/.env
+deploy/.env.local
+deploy/.env.*.local
+
+# Logs y volátiles
+backup.log
+*.log
+
+# Claude Code local
+.claude/
+
+# Backups locales
+backups/
+deploy/backups/
+
+# OS
+.DS_Store
+Thumbs.db

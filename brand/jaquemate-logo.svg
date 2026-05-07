@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 120" role="img" aria-label="Jaque Mate — by Jaqueting">
+  <title>Jaque Mate</title>
+  <desc>Logo de Jaque Mate. Mark cuadrado 2x2 representando casillas de ajedrez (casillas Nogal Mate #3B2A1F y Marfil Cuadro #EDE3D2) con el símbolo # de notación de mate sobre la casilla inferior derecha. Wordmark "Jaque Mate" en Fraunces 600.</desc>
+
+  <defs>
+    <style>
+      .walnut { fill: #3B2A1F; }
+      .ivory  { fill: #EDE3D2; }
+      .garnet { fill: #7C1D2E; }
+      .ink    { fill: #0A0A0F; }
+      .wordmark {
+        font-family: 'Fraunces', Georgia, serif;
+        font-weight: 600;
+        font-size: 42px;
+        fill: #0A0A0F;
+        letter-spacing: -0.5px;
+      }
+      .descriptor {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 500;
+        font-size: 9px;
+        fill: #3B2A1F;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+      .mate-glyph {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 30px;
+      }
+    </style>
+  </defs>
+
+  <!-- MARK: cuadricula 2x2 -->
+  <g transform="translate(20, 25)">
+    <!-- Casilla superior izquierda — marfil -->
+    <rect x="0" y="0" width="35" height="35" class="ivory" rx="2"/>
+    <!-- Casilla superior derecha — nogal -->
+    <rect x="35" y="0" width="35" height="35" class="walnut" rx="2"/>
+    <!-- Casilla inferior izquierda — nogal -->
+    <rect x="0" y="35" width="35" height="35" class="walnut" rx="2"/>
+    <!-- Casilla inferior derecha — marfil con # de mate -->
+    <rect x="35" y="35" width="35" height="35" class="ivory" rx="2"/>
+    <!-- Símbolo # de notación de mate, en granate sobre la casilla marfil -->
+    <text x="52.5" y="62" text-anchor="middle" class="mate-glyph garnet">#</text>
+
+    <!-- Borde sutil de la cuadricula completa -->
+    <rect x="-0.5" y="-0.5" width="71" height="71" fill="none" stroke="#3B2A1F" stroke-width="1" rx="2.5"/>
+  </g>
+
+  <!-- WORDMARK -->
+  <text x="115" y="62" class="wordmark">Jaque Mate</text>
+
+  <!-- DESCRIPTOR -->
+  <text x="115" y="82" class="descriptor">CRM · BY JAQUETING</text>
+</svg>

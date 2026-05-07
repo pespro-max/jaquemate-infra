@@ -1,0 +1,171 @@
+name: jaquemate
+
+# ============================================================
+# JAQUEMATE — Stack multitenant del portafolio Jaqueting
+# Twenty CRM (multi-workspace) + n8n + Postgres + Redis + Caddy
+# Tenants: pespro, traulog, jaqueting, fastnet, cancun, iki
+# Documento principal: plan-despliegue-hoy.md
+# ============================================================
+
+services:
+  # ---------- DATABASE ----------
+  db:
+    image: postgres:16
+    container_name: jaquemate-db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    environment:
+      POSTGRES_DB: ${PG_DATABASE_NAME:-default}
+      POSTGRES_USER: ${PG_DATABASE_USER:-postgres}
+      POSTGRES_PASSWORD: ${PG_DATABASE_PASSWORD}
+    healthcheck:
+      test: pg_isready -U ${PG_DATABASE_USER:-postgres} -h localhost -d postgres
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # ---------- REDIS ----------
+  redis:
+    image: redis:7-alpine
+    container_name: jaquemate-redis
+    command: ["--maxmemory-policy", "noeviction"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  # ---------- TWENTY CRM (server) ----------
+  server:
+    image: twentycrm/twenty:${TWENTY_TAG:-latest}
+    container_name: jaquemate-twenty-server
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - twenty_local_data:/app/packages/twenty-server/.local-storage
+    environment:
+      NODE_PORT: 3000
+      PG_DATABASE_URL: postgres://${PG_DATABASE_USER:-postgres}:${PG_DATABASE_PASSWORD}@db:5432/default
+      REDIS_URL: redis://redis:6379
+
+      # --- Multi-workspace LOCKED para 6 tenants ---
+      IS_MULTIWORKSPACE_ENABLED: "true"
+      DEFAULT_SUBDOMAIN: app
+      SERVER_URL: ${SERVER_URL:-https://app.jaquemate.jaqueting.com}
+      FRONTEND_URL: ${SERVER_URL:-https://app.jaquemate.jaqueting.com}
+
+      APP_SECRET: ${APP_SECRET}
+      STORAGE_TYPE: ${STORAGE_TYPE:-local}
+
+      # SMTP opcional (descomentar cuando esté listo)
+      # EMAIL_DRIVER: smtp
+      # EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS}
+      # EMAIL_FROM_NAME: ${EMAIL_FROM_NAME}
+      # EMAIL_SMTP_HOST: ${EMAIL_SMTP_HOST}
+      # EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT}
+      # EMAIL_SMTP_USER: ${EMAIL_SMTP_USER}
+      # EMAIL_SMTP_PASSWORD: ${EMAIL_SMTP_PASSWORD}
+    healthcheck:
+      test: curl --fail http://localhost:3000/healthz
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  # ---------- TWENTY CRM (worker) ----------
+  worker:
+    image: twentycrm/twenty:${TWENTY_TAG:-latest}
+    container_name: jaquemate-twenty-worker
+    depends_on:
+      db:
+        condition: service_healthy
+      server:
+        condition: service_healthy
+    command: ["yarn", "worker:prod"]
+    volumes:
+      - twenty_local_data:/app/packages/twenty-server/.local-storage
+    environment:
+      PG_DATABASE_URL: postgres://${PG_DATABASE_USER:-postgres}:${PG_DATABASE_PASSWORD}@db:5432/default
+      REDIS_URL: redis://redis:6379
+      DISABLE_DB_MIGRATIONS: "true"
+      DISABLE_CRON_JOBS_REGISTRATION: "true"
+      IS_MULTIWORKSPACE_ENABLED: "true"
+      DEFAULT_SUBDOMAIN: app
+      SERVER_URL: ${SERVER_URL:-https://app.jaquemate.jaqueting.com}
+      FRONTEND_URL: ${SERVER_URL:-https://app.jaquemate.jaqueting.com}
+      APP_SECRET: ${APP_SECRET}
+      STORAGE_TYPE: ${STORAGE_TYPE:-local}
+    restart: unless-stopped
+
+  # ---------- N8N ----------
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: jaquemate-n8n
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - n8n_data:/home/node/.n8n
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: db
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: n8n
+      DB_POSTGRESDB_USER: ${PG_DATABASE_USER:-postgres}
+      DB_POSTGRESDB_PASSWORD: ${PG_DATABASE_PASSWORD}
+
+      N8N_HOST: ${N8N_HOST:-engine.jaquemate.jaqueting.com}
+      N8N_PROTOCOL: https
+      N8N_PORT: 5678
+      WEBHOOK_URL: ${N8N_WEBHOOK_URL:-https://engine.jaquemate.jaqueting.com/}
+
+      N8N_BASIC_AUTH_ACTIVE: "true"
+      N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+
+      GENERIC_TIMEZONE: ${TIMEZONE:-America/Los_Angeles}
+      TZ: ${TIMEZONE:-America/Los_Angeles}
+
+      # Permite que Twenty llame a n8n por HTTP interno
+      N8N_PROXY_HOPS: 1
+    restart: unless-stopped
+
+  # ---------- CADDY (reverse proxy + SSL automático) ----------
+  caddy:
+    image: caddy:2-alpine
+    container_name: jaquemate-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - server
+      - n8n
+    restart: unless-stopped
+
+  # ---------- UPTIME KUMA (monitoring) ----------
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: jaquemate-uptime
+    volumes:
+      - uptime_kuma_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  twenty_local_data:
+  n8n_data:
+  caddy_data:
+  caddy_config:
+  uptime_kuma_data:
