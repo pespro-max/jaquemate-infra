@@ -25,29 +25,33 @@ check() {
     fi
 }
 
-# Grace period post-reboot: si twenty-server está "starting", esperar hasta
-# 90s antes de evaluar. Twenty (Nest) tarda ~60s en mapear rutas y pasar de
-# starting → healthy, lo que produce falsos FAIL tras un reboot frío.
-wait_for_starting() {
+# Grace period post-reboot: si un container está "starting" o "unhealthy",
+# esperar hasta 90s con polling cada 5s antes de evaluar. Twenty (Nest) tarda
+# ~60s en pasar starting → healthy y a veces oscila por unhealthy intermedio,
+# lo que produce falsos FAIL tras un reboot frío.
+wait_for_healthy() {
     local container="$1"
     local max_wait=90
     local waited=0
     local status
+    local announced=0
     while [ "$waited" -lt "$max_wait" ]; do
         status=$(docker inspect --format='{{.State.Health.Status}}' "$container" 2>/dev/null)
-        if [ "$status" != "starting" ]; then
+        if [ "$status" != "starting" ] && [ "$status" != "unhealthy" ]; then
             return 0
         fi
-        if [ "$waited" -eq 0 ]; then
-            echo "  [WAIT] $container en 'starting' — esperando hasta ${max_wait}s..."
+        if [ "$announced" -eq 0 ]; then
+            echo "  [WAIT] $container en '$status' — esperando hasta ${max_wait}s..."
+            announced=1
         fi
         sleep 5
         waited=$((waited + 5))
     done
 }
 
-wait_for_starting jaquemate-twenty-server
-wait_for_starting jaquemate-db
+wait_for_healthy jaquemate-twenty-server
+wait_for_healthy jaquemate-db
+wait_for_healthy jaquemate-redis
 
 echo ""
 echo "Containers:"

@@ -8,6 +8,37 @@ licencia_marca: Propiedad de Jaqueting
 
 # Jaque Mate Kit
 
+> **Estado del deploy: OPERATIVO** (2026-05-07). Stack en VPS Hetzner CCX13 (Ashburn).
+> 6 workspaces de Twenty + n8n + Uptime Kuma. Health check verde
+> (`bash deploy/scripts/health-check.sh`). Cierre de sesión 2026-05-06/07 documentado
+> en [`SESSION-CLOSURE-2026-05-06.md`](SESSION-CLOSURE-2026-05-06.md).
+>
+> **Repo:** https://github.com/pespro-max/jaquemate-infra (privado).
+
+## Reanudar trabajo
+
+```bash
+# En máquina nueva
+git clone https://github.com/pespro-max/jaquemate-infra.git ~/jaquemate
+cd ~/jaquemate
+
+# deploy/.env NO está en el repo (gitignored). Reconstruir desde el gestor de
+# passwords del owner o desde deploy/.env.example.
+cp deploy/.env.example deploy/.env
+$EDITOR deploy/.env
+
+# Levantar el stack
+cd deploy && docker compose up -d
+
+# Verificar
+bash scripts/health-check.sh
+```
+
+En el VPS de producción ya está corriendo — para retomar:
+`ssh eddy@<ip> && cd ~/jaquemate && bash deploy/scripts/health-check.sh`.
+
+---
+
 Este paquete tiene **dos cosas separadas** que se ejecutan en momentos distintos.
 
 ## 1. Identidad y roadmap (`brand/`) — referencia de largo plazo

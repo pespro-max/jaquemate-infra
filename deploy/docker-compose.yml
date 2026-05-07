@@ -39,8 +39,14 @@ services:
     restart: unless-stopped
 
   # ---------- TWENTY CRM (server) ----------
+  # Construimos desde ./twenty-patched para persistir el patch del límite de
+  # workspaces sin enterprise key. Ver twenty-patched/README.md.
   server:
-    image: twentycrm/twenty:${TWENTY_TAG:-latest}
+    build:
+      context: ./twenty-patched
+      args:
+        TWENTY_VERSION: ${TWENTY_TAG:-latest}
+    image: jaquemate/twenty-patched:${TWENTY_TAG:-latest}
     container_name: jaquemate-twenty-server
     depends_on:
       db:
@@ -79,8 +85,13 @@ services:
     restart: unless-stopped
 
   # ---------- TWENTY CRM (worker) ----------
+  # Misma imagen patcheada que server (comparte el módulo de constants).
   worker:
-    image: twentycrm/twenty:${TWENTY_TAG:-latest}
+    build:
+      context: ./twenty-patched
+      args:
+        TWENTY_VERSION: ${TWENTY_TAG:-latest}
+    image: jaquemate/twenty-patched:${TWENTY_TAG:-latest}
     container_name: jaquemate-twenty-worker
     depends_on:
       db:
