@@ -57,6 +57,7 @@ services:
       - twenty_local_data:/app/packages/twenty-server/.local-storage
     environment:
       NODE_PORT: 3000
+      LOGIC_FUNCTION_TYPE: LOCAL
       PG_DATABASE_URL: postgres://${PG_DATABASE_USER:-postgres}:${PG_DATABASE_PASSWORD}@db:5432/default
       REDIS_URL: redis://redis:6379
 
@@ -69,14 +70,14 @@ services:
       APP_SECRET: ${APP_SECRET}
       STORAGE_TYPE: ${STORAGE_TYPE:-local}
 
-      # SMTP opcional (descomentar cuando esté listo)
-      # EMAIL_DRIVER: smtp
-      # EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS}
-      # EMAIL_FROM_NAME: ${EMAIL_FROM_NAME}
-      # EMAIL_SMTP_HOST: ${EMAIL_SMTP_HOST}
-      # EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT}
-      # EMAIL_SMTP_USER: ${EMAIL_SMTP_USER}
-      # EMAIL_SMTP_PASSWORD: ${EMAIL_SMTP_PASSWORD}
+      # SMTP via Resend
+      EMAIL_DRIVER: ${EMAIL_DRIVER}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME}
+      EMAIL_SMTP_HOST: ${EMAIL_SMTP_HOST}
+      EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT}
+      EMAIL_SMTP_USER: ${EMAIL_SMTP_USER}
+      EMAIL_SMTP_PASSWORD: ${EMAIL_SMTP_PASSWORD}
     healthcheck:
       test: curl --fail http://localhost:3000/healthz
       interval: 5s
@@ -106,12 +107,21 @@ services:
       REDIS_URL: redis://redis:6379
       DISABLE_DB_MIGRATIONS: "true"
       DISABLE_CRON_JOBS_REGISTRATION: "true"
+      LOGIC_FUNCTION_TYPE: LOCAL
       IS_MULTIWORKSPACE_ENABLED: "true"
       DEFAULT_SUBDOMAIN: app
       SERVER_URL: ${SERVER_URL:-https://app.jaquemate.jaqueting.com}
       FRONTEND_URL: ${SERVER_URL:-https://app.jaquemate.jaqueting.com}
       APP_SECRET: ${APP_SECRET}
       STORAGE_TYPE: ${STORAGE_TYPE:-local}
+      # SMTP via Resend (worker procesa el queue de emails de invitación)
+      EMAIL_DRIVER: ${EMAIL_DRIVER}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME}
+      EMAIL_SMTP_HOST: ${EMAIL_SMTP_HOST}
+      EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT}
+      EMAIL_SMTP_USER: ${EMAIL_SMTP_USER}
+      EMAIL_SMTP_PASSWORD: ${EMAIL_SMTP_PASSWORD}
     restart: unless-stopped
 
   # ---------- N8N ----------
